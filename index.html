@@ -1,108 +1,45 @@
 <!DOCTYPE html>
-<html>
+<html lang="ar">
 <head>
   <meta charset="UTF-8">
-  <title>Contractor ID System</title>
-  <style>
-    body { font-family: Arial; padding: 20px; }
-    input, select { margin-bottom: 10px; width: 300px; padding: 5px; }
-    button { padding: 8px 12px; margin-top: 10px; }
-    hr { margin: 20px 0; }
-  </style>
+  <title>Emaar – Service Provider IDs</title>
 </head>
 <body>
 
-<h2>Login</h2>
-<input id="email" placeholder="Email"><br>
-<input id="password" type="password" placeholder="Password"><br>
+<h2>Login Test</h2>
+
+<input type="email" id="email" placeholder="Email"><br><br>
+<input type="password" id="password" placeholder="Password"><br><br>
+
 <button onclick="login()">Login</button>
 
-<hr>
+<p id="msg"></p>
 
-<h2>Add Worker</h2>
-<input id="fullName" placeholder="Full Name"><br>
-<input id="nationalId" placeholder="National ID"><br>
-<input id="jobTitle" placeholder="Job Title"><br>
-<input id="serviceProviderId" placeholder="Service Provider ID"><br>
-<input id="zones" placeholder="Allowed Zones (comma separated)"><br>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-<label>Personal Photo</label><br>
-<input type="file" id="personalPhoto"><br>
-
-<label>ID Photo</label><br>
-<input type="file" id="idPhoto"><br>
-
-<label>Criminal Record</label><br>
-<input type="file" id="criminalRecord"><br>
-
-<button onclick="addWorker()">Save Worker + Create Request</button>
-
-<!-- Firebase Scripts بدون ES Modules -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
-
-<script>
-  // 🔥 ضع Firebase Config بتاعك هنا
   const firebaseConfig = {
-    apiKey: "XXXX",
-    authDomain: "XXXX.firebaseapp.com",
-    projectId: "XXXX",
-    storageBucket: "XXXX.appspot.com",
-    appId: "XXXX"
+    apiKey: "AIzaSyB19hTeL7TKpdAx6D7bS9vEtKbYoCmbP90",
+    authDomain: "emaar-sp-ids.firebaseapp.com",
+    projectId: "emaar-sp-ids",
   };
 
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
-  const storage = firebase.storage();
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
 
-  function login() {
-    const userEmail = document.getElementById("email").value;
-    const userPassword = document.getElementById("password").value;
+  window.login = function () {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
 
-    auth.signInWithEmailAndPassword(userEmail, userPassword)
-      .then(() => alert("Logged in successfully"))
-      .catch(error => alert(error.message));
-  }
-
-  async function uploadFile(file, path) {
-    const storageRef = storage.ref(path);
-    await storageRef.put(file);
-    return await storageRef.getDownloadURL();
-  }
-
-  async function addWorker() {
-    const workerId = "W-" + Date.now();
-
-    const personalPhotoUrl = await uploadFile(document.getElementById("personalPhoto").files[0], `workers/personal_photos/${workerId}`);
-    const idPhotoUrl = await uploadFile(document.getElementById("idPhoto").files[0], `workers/id_photos/${workerId}`);
-    const criminalRecordUrl = await uploadFile(document.getElementById("criminalRecord").files[0], `workers/criminal_records/${workerId}`);
-
-    // حفظ Worker
-    await db.collection("workers").doc(workerId).set({
-      full_name: document.getElementById("fullName").value,
-      national_id: document.getElementById("nationalId").value,
-      job_title: document.getElementById("jobTitle").value,
-      service_provider_id: document.getElementById("serviceProviderId").value,
-      allowed_zones: document.getElementById("zones").value.split(","),
-      personal_photo_url: personalPhotoUrl,
-      id_photo_url: idPhotoUrl,
-      criminal_record_url: criminalRecordUrl,
-      created_at: firebase.firestore.FieldValue.serverTimestamp()
-    });
-
-    // إنشاء Access Request
-    await db.collection("access_requests").add({
-      worker_id: workerId,
-      status: "PENDING_FM",
-      fingerprint_confirmed: false,
-      created_at: firebase.firestore.FieldValue.serverTimestamp()
-    });
-
-    alert("Worker added & request created");
-  }
+    signInWithEmailAndPassword(auth, email, password)
+      .then(() => {
+        document.getElementById("msg").innerText = "Logged in successfully ✅";
+      })
+      .catch(error => {
+        document.getElementById("msg").innerText = error.message;
+      });
+  };
 </script>
 
 </body>
