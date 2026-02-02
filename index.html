@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Contractor ID System</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    input, select { margin-bottom: 10px; width: 300px; padding: 5px; }
+    button { padding: 8px 12px; margin-top: 10px; }
+    hr { margin: 20px 0; }
+  </style>
+</head>
+<body>
+
+<h2>Login</h2>
+<input id="email" placeholder="Email"><br>
+<input id="password" type="password" placeholder="Password"><br>
+<button onclick="login()">Login</button>
+
+<hr>
+
+<h2>Add Worker</h2>
+<input id="fullName" placeholder="Full Name"><br>
+<input id="nationalId" placeholder="National ID"><br>
+<input id="jobTitle" placeholder="Job Title"><br>
+<input id="serviceProviderId" placeholder="Service Provider ID"><br>
+<input id="zones" placeholder="Allowed Zones (comma separated)"><br>
+
+<label>Personal Photo</label><br>
+<input type="file" id="personalPhoto"><br>
+
+<label>ID Photo</label><br>
+<input type="file" id="idPhoto"><br>
+
+<label>Criminal Record</label><br>
+<input type="file" id="criminalRecord"><br>
+
+<button onclick="addWorker()">Save Worker + Create Request</button>
+
+<!-- Firebase Scripts بدون ES Modules -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+
+<script>
+  // 🔥 ضع Firebase Config بتاعك هنا
+  const firebaseConfig = {
+    apiKey: "XXXX",
+    authDomain: "XXXX.firebaseapp.com",
+    projectId: "XXXX",
+    storageBucket: "XXXX.appspot.com",
+    appId: "XXXX"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+  const storage = firebase.storage();
+
+  function login() {
+    const userEmail = document.getElementById("email").value;
+    const userPassword = document.getElementById("password").value;
+
+    auth.signInWithEmailAndPassword(userEmail, userPassword)
+      .then(() => alert("Logged in successfully"))
+      .catch(error => alert(error.message));
+  }
+
+  async function uploadFile(file, path) {
+    const storageRef = storage.ref(path);
+    await storageRef.put(file);
+    return await storageRef.getDownloadURL();
+  }
+
+  async function addWorker() {
+    const workerId = "W-" + Date.now();
+
+    const personalPhotoUrl = await uploadFile(document.getElementById("personalPhoto").files[0], `workers/personal_photos/${workerId}`);
+    const idPhotoUrl = await uploadFile(document.getElementById("idPhoto").files[0], `workers/id_photos/${workerId}`);
+    const criminalRecordUrl = await uploadFile(document.getElementById("criminalRecord").files[0], `workers/criminal_records/${workerId}`);
+
+    // حفظ Worker
+    await db.collection("workers").doc(workerId).set({
+      full_name: document.getElementById("fullName").value,
+      national_id: document.getElementById("nationalId").value,
+      job_title: document.getElementById("jobTitle").value,
+      service_provider_id: document.getElementById("serviceProviderId").value,
+      allowed_zones: document.getElementById("zones").value.split(","),
+      personal_photo_url: personalPhotoUrl,
+      id_photo_url: idPhotoUrl,
+      criminal_record_url: criminalRecordUrl,
+      created_at: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    // إنشاء Access Request
+    await db.collection("access_requests").add({
+      worker_id: workerId,
+      status: "PENDING_FM",
+      fingerprint_confirmed: false,
+      created_at: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    alert("Worker added & request created");
+  }
+</script>
+
+</body>
+</html>
