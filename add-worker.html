@@ -22,21 +22,28 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyB19hTeL7TKpdAx6D7bS9vEtKbYoCmbP90",
-    authDomain: "emaar-sp-ids.firebaseapp.com",
-    projectId: "emaar-sp-ids",
-    storageBucket: "emaar-sp-ids.appspot.com",
-    messagingSenderId: "949167965180",
-    appId: "1:949167965180:web:46dfa2047895ddb4ac6879"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyB19hTeL7TKpdAx6D7bS9vEtKbYoCmbP90",
+  authDomain: "emaar-sp-ids.firebaseapp.com",
+  projectId: "emaar-sp-ids",
+  storageBucket: "emaar-sp-ids.appspot.com",
+  messagingSenderId: "949167965180",
+  appId: "1:949167965180:web:46dfa2047895ddb4ac6879"
+};
 
-  firebase.initializeApp(firebaseConfig);
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-  const db = firebase.firestore();
+async function addWorker() {
+  try {
+    const counterRef = db.collection("counters").doc("workers");
+    const counterDoc = await counterRef.get();
+    let lastNumber = counterDoc.exists ? counterDoc.data().lastNumber : 0;
+    const newNumber = lastNumber + 1;
+    const workerId = "WORKER-" + String(newNumber).padStart(6, "0");
 
-  function addWorker() {
     const data = {
+      workerId: workerId,
       name: document.getElementById("name").value,
       nationalId: document.getElementById("nationalId").value,
       contractor: document.getElementById("contractor").value,
@@ -48,14 +55,14 @@
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     };
 
-    db.collection("workers").add(data)
-      .then(() => {
-        alert("Worker added successfully");
-      })
-      .catch((error) => {
-        alert(error.message);
-      });
+    await db.collection("workers").doc(workerId).set(data);
+    await counterRef.update({ lastNumber: newNumber });
+
+    alert("Worker added successfully with ID: " + workerId);
+  } catch (error) {
+    alert(error.message);
   }
+}
 </script>
 
 </body>
