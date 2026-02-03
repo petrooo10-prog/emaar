@@ -1,15 +1,39 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Emaar Access System</title>
+  <title>Emaar Login Test</title>
 </head>
 <body>
 
-<h1>System is working ✅</h1>
+<h2>Login</h2>
+
+<input id="email" placeholder="Email"><br><br>
+<input id="password" type="password" placeholder="Password"><br><br>
+<button onclick="login()">Login</button>
+
+<!-- Firebase Auth فقط -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
 <script>
-  alert("HTML loaded successfully");
+  const firebaseConfig = {
+    apiKey: "PUT_YOUR_API_KEY_HERE",
+    authDomain: "PUT_YOUR_AUTH_DOMAIN",
+    projectId: "PUT_YOUR_PROJECT_ID"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+
+  function login() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    auth.signInWithEmailAndPassword(email, password)
+      .then(() => alert("Logged in successfully ✅"))
+      .catch(error => alert(error.message));
+  }
 </script>
 
 </body>
