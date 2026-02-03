@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>Add Worker</title>
+</head>
+<body>
+
+<h2>Add New Worker</h2>
+
+<input id="name" placeholder="Full Name"><br><br>
+<input id="nationalId" placeholder="National ID"><br><br>
+<input id="contractor" placeholder="Contractor Name"><br><br>
+<input id="jobTitle" placeholder="Job Title"><br><br>
+<input id="gates" placeholder="Gates (comma separated)"><br><br>
+<input id="startDate" type="date"><br><br>
+<input id="endDate" type="date"><br><br>
+
+<button onclick="addWorker()">Add Worker</button>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyB19hTeL7TKpdAx6D7bS9vEtKbYoCmbP90",
+    authDomain: "emaar-sp-ids.firebaseapp.com",
+    projectId: "emaar-sp-ids",
+    storageBucket: "emaar-sp-ids.appspot.com",
+    messagingSenderId: "949167965180",
+    appId: "1:949167965180:web:46dfa2047895ddb4ac6879"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+
+  const db = firebase.firestore();
+
+  function addWorker() {
+    const data = {
+      name: document.getElementById("name").value,
+      nationalId: document.getElementById("nationalId").value,
+      contractor: document.getElementById("contractor").value,
+      jobTitle: document.getElementById("jobTitle").value,
+      gates: document.getElementById("gates").value.split(","),
+      startDate: document.getElementById("startDate").value,
+      endDate: document.getElementById("endDate").value,
+      status: "pending",
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    db.collection("workers").add(data)
+      .then(() => {
+        alert("Worker added successfully");
+      })
+      .catch((error) => {
+        alert(error.message);
+      });
+  }
+</script>
+
+</body>
+</html>
