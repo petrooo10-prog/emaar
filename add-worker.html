@@ -45,9 +45,12 @@ const db = firebase.firestore();
 const storage = firebase.storage();
 
 async function uploadFile(file, folder, workerId) {
-  const ref = storage.ref().child(`${folder}/${workerId}`);
+  const ref = storage.ref().child(`${folder}/${workerId}_${file.name}`);
+  console.log("Uploading to:", `${folder}/${workerId}_${file.name}`);
   await ref.put(file);
-  return await ref.getDownloadURL();
+  const url = await ref.getDownloadURL();
+  console.log("Uploaded URL:", url);
+  return url;
 }
 
 async function addWorker() {
