@@ -16,7 +16,7 @@
 <input id="startDate" type="date"><br><br>
 <input id="endDate" type="date"><br><br>
 
-<h3>Upload Images</h3>
+<h3>Upload Images (Required)</h3>
 <label>Personal Photo:</label>
 <input type="file" id="personalPhoto"><br><br>
 <label>ID Photo:</label>
@@ -44,13 +44,34 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const storage = firebase.storage();
 
-async function uploadFile(file, path) {
-  const ref = storage.ref().child(path);
+async function uploadFile(file, folder, workerId) {
+  const ref = storage.ref().child(`${folder}/${workerId}`);
   await ref.put(file);
   return await ref.getDownloadURL();
 }
 
 async function addWorker() {
+  const name = document.getElementById("name").value.trim();
+  const nationalId = document.getElementById("nationalId").value.trim();
+  const contractor = document.getElementById("contractor").value.trim();
+  const jobTitle = document.getElementById("jobTitle").value.trim();
+  const gates = document.getElementById("gates").value.trim();
+  const startDate = document.getElementById("startDate").value;
+  const endDate = document.getElementById("endDate").value;
+  const personalPhotoFile = document.getElementById("personalPhoto").files[0];
+  const idPhotoFile = document.getElementById("idPhoto").files[0];
+  const criminalPhotoFile = document.getElementById("criminalPhoto").files[0];
+
+  if (!name || !nationalId || !contractor || !jobTitle || !gates || !startDate || !endDate) {
+    alert("Please fill all required fields including start and end date.");
+    return;
+  }
+
+  if (!personalPhotoFile || !idPhotoFile || !criminalPhotoFile) {
+    alert("Please upload all required images.");
+    return;
+  }
+
   try {
     const counterRef = db.collection("counters").doc("workers");
     const counterDoc = await counterRef.get();
@@ -58,24 +79,19 @@ async function addWorker() {
     const newNumber = lastNumber + 1;
     const workerId = "WORKER-" + String(newNumber).padStart(6, "0");
 
-    // Upload images
-    const personalPhotoFile = document.getElementById("personalPhoto").files[0];
-    const idPhotoFile = document.getElementById("idPhoto").files[0];
-    const criminalPhotoFile = document.getElementById("criminalPhoto").files[0];
-
-    const personalPhotoURL = personalPhotoFile ? await uploadFile(personalPhotoFile, `personal_photos/${workerId}`) : "";
-    const idPhotoURL = idPhotoFile ? await uploadFile(idPhotoFile, `id_photos/${workerId}`) : "";
-    const criminalPhotoURL = criminalPhotoFile ? await uploadFile(criminalPhotoFile, `criminal_records/${workerId}`) : "";
+    const personalPhotoURL = await uploadFile(personalPhotoFile, "Personal_photos", workerId);
+    const idPhotoURL = await uploadFile(idPhotoFile, "id_photos", workerId);
+    const criminalPhotoURL = await uploadFile(criminalPhotoFile, "criminal_records", workerId);
 
     const data = {
-      workerId: workerId,
-      name: document.getElementById("name").value,
-      nationalId: document.getElementById("nationalId").value,
-      contractor: document.getElementById("contractor").value,
-      jobTitle: document.getElementById("jobTitle").value,
-      gates: document.getElementById("gates").value.split(","),
-      startDate: document.getElementById("startDate").value,
-      endDate: document.getElementById("endDate").value,
+      workerId,
+      name,
+      nationalId,
+      contractor,
+      jobTitle,
+      gates: gates.split(","),
+      startDate,
+      endDate,
       status: "pending",
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       personalPhotoURL,
@@ -87,9 +103,11 @@ async function addWorker() {
     await counterRef.update({ lastNumber: newNumber });
 
     alert("Worker added successfully with ID: " + workerId);
-
   } catch (error) {
     alert(error.message);
   }
 }
 </script>
+
+</body>
+</html>
