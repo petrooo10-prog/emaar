@@ -1,14 +1,33 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>Emaar Login</title>
+</head>
+<body>
+
+<h2>Emaar Access System – Login</h2>
+
+<input id="email" placeholder="Email"><br><br>
+<input id="password" type="password" placeholder="Password"><br><br>
+
+<button onclick="login()">Login</button>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
 <script>
   const firebaseConfig = {
-  apiKey: "AIzaSyB19hTeL7TKpdAx6D7bS9vEtKbYoCmbP90",
-  authDomain: "emaar-sp-ids.firebaseapp.com",
-  projectId: "emaar-sp-ids",
-  storageBucket: "emaar-sp-ids.firebasestorage.app",
-  messagingSenderId: "949167965180",
-  appId: "1:949167965180:web:46dfa2047895ddb4ac6879",
+    apiKey: "AIzaSyB19hTeL7TKpdAx6D7bS9vEtKbYoCmbP90",
+    authDomain: "emaar-sp-ids.firebaseapp.com",
+    projectId: "emaar-sp-ids",
+    storageBucket: "emaar-sp-ids.appspot.com",
+    messagingSenderId: "949167965180",
+    appId: "1:949167965180:web:46dfa2047895ddb4ac6879"
   };
 
   firebase.initializeApp(firebaseConfig);
+
   const auth = firebase.auth();
 
   function login() {
@@ -16,8 +35,14 @@
     const password = document.getElementById("password").value;
 
     auth.signInWithEmailAndPassword(email, password)
-      .then(() => alert("Logged in successfully ✅"))
-      .catch(error => alert(error.message));
+      .then(() => {
+        alert("Logged in successfully");
+      })
+      .catch((error) => {
+        alert(error.message);
+      });
   }
 </script>
 
+</body>
+</html>
