@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>FM Admin</title>
+</head>
+<body>
+
+<h2>FM Admin – Workers Review</h2>
+
+<table border="1" id="workersTable">
+  <thead>
+    <tr>
+      <th>Worker ID</th>
+      <th>Name</th>
+      <th>Contractor</th>
+      <th>Job Title</th>
+      <th>Gates</th>
+      <th>Start Date</th>
+      <th>End Date</th>
+      <th>Status</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyB19hTeL7TKpdAx6D7bS9vEtKbYoCmbP90",
+  authDomain: "emaar-sp-ids.firebaseapp.com",
+  projectId: "emaar-sp-ids",
+  storageBucket: "emaar-sp-ids.appspot.com",
+  messagingSenderId: "949167965180",
+  appId: "1:949167965180:web:46dfa2047895ddb4ac6879"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+const tbody = document.querySelector("#workersTable tbody");
+
+function loadWorkers() {
+  tbody.innerHTML = "";
+  db.collection("workers").orderBy("createdAt", "desc").get()
+    .then(snapshot => {
+      snapshot.forEach(doc => {
+        const worker = doc.data();
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${worker.workerId}</td>
+          <td>${worker.name}</td>
+          <td>${worker.contractor}</td>
+          <td>${worker.jobTitle}</td>
+          <td>${worker.gates.join(", ")}</td>
+          <td>${worker.startDate}</td>
+          <td>${worker.endDate}</td>
+          <td id="status-${worker.workerId}">${worker.status}</td>
+          <td>
+            <button onclick="updateStatus('${worker.workerId}', 'approved')">Approve</button>
+            <button onclick="updateStatus('${worker.workerId}', 'blocked')">Block</button>
+            <button onclick="updateStatus('${worker.workerId}', 'active')">Activate</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    });
+}
+
+function updateStatus(workerId, newStatus) {
+  db.collection("workers").doc(workerId).update({ status: newStatus })
+    .then(() => {
+      document.getElementById("status-" + workerId).innerText = newStatus;
+      alert("Status updated to: " + newStatus);
+    })
+    .catch(error => alert(error.message));
+}
+
+loadWorkers();
+</script>
+
+</body>
+</html>
